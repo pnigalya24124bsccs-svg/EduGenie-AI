@@ -1,1 +1,1 @@
-Phase 8: Project Demonstration
+Phase 8: Project Demonstratio
