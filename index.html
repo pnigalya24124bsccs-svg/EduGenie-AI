@@ -1,0 +1,134 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGenie AI</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background-color: #f8f9fa; color: #333; }
+        h1 { color: #0d6efd; margin-bottom: 5px; }
+        .subtitle { color: #6c757d; margin-bottom: 25px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card h3 { margin-top: 0; color: #212529; }
+        input[type="text"], textarea { width: 100%; max-width: 600px; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        button { margin-top: 10px; padding: 10px 20px; background-color: #0d6efd; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        button:hover { background-color: #0b5ed7; }
+        .result-box { margin-top: 15px; padding: 15px; background-color: #eef5ff; border-left: 4px solid #0d6efd; border-radius: 4px; white-space: pre-wrap; font-size: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to EduGenie 🧠 ✨</h1>
+    <p class="subtitle">Your personal AI tutor for learning support!</p>
+
+    <!-- 1. Q&A -->
+    <div class="card">
+        <h3>Ask EduGenie a Question:</h3>
+        <input type="text" id="qaInput" placeholder="why is the sky blue?"> <br>
+        <button onclick="askQuestion()">Get Answer</button>
+        <div id="qaResult" class="result-box"></div>
+    </div>
+
+    <!-- 2. Explain -->
+    <div class="card">
+        <h3>Need an Explanation?</h3>
+        <input type="text" id="explainInput" placeholder="Photosynthesis"> <br>
+        <button onclick="explainTopic()">Explain</button>
+        <div id="explainResult" class="result-box"></div>
+    </div>
+
+    <!-- 3. Summarize -->
+    <div class="card">
+        <h3>Summarize a Paragraph:</h3>
+        <textarea id="summarizeInput" rows="4" placeholder="Paste long content to summarize..."></textarea> <br>
+        <button onclick="summarizeText()">Summarize</button>
+        <div id="summarizeResult" class="result-box"></div>
+    </div>
+
+    <!-- 4. Generate Quiz -->
+    <div class="card">
+        <h3>Generate a Quiz:</h3>
+        <input type="text" id="quizInput" placeholder="Paste a topic or passage (e.g., Solar System)"> <br>
+        <button onclick="generateQuiz()">Generate Quiz</button>
+        <div id="quizResult" class="result-box"></div>
+    </div>
+
+    <!-- 5. Learning Recommendations -->
+    <div class="card">
+        <h3>Get Learning Recommendations:</h3>
+        <input type="text" id="learningInput" placeholder="e.g. Linear Regression, SQL, Data Science"> <br>
+        <button onclick="getLearningPath()">Get Recommendations</button>
+        <div id="learningResult" class="result-box"></div>
+    </div>
+
+    <script>
+        // Generic Helper for POST Calls
+        async function handlePostRequest(url, fieldName, fieldValue, resultDivId, loadingText) {
+            const resultDiv = document.getElementById(resultDivId);
+            if (!fieldValue.trim()) return;
+
+            resultDiv.style.display = "block";
+            resultDiv.innerText = loadingText;
+
+            try {
+                const formData = new FormData();
+                formData.append(fieldName, fieldValue);
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                resultDiv.innerText = data.answer || "❌ No response generated.";
+            } catch (err) {
+                resultDiv.innerText = "❌ Error connecting to server.";
+            }
+        }
+
+        // 1. Ask Question
+        async function askQuestion() {
+            const question = document.getElementById("qaInput").value;
+            const resultDiv = document.getElementById("qaResult");
+            if (!question.trim()) return;
+
+            resultDiv.style.display = "block";
+            resultDiv.innerText = "Thinking...";
+
+            try {
+                const response = await fetch(`/qa?question=${encodeURIComponent(question)}`);
+                const data = await response.json();
+                resultDiv.innerText = data.answer || "❌ No answer received.";
+            } catch (err) {
+                resultDiv.innerText = "❌ Error fetching answer.";
+            }
+        }
+
+        // 2. Explain Concept
+        function explainTopic() {
+            const topic = document.getElementById("explainInput").value;
+            handlePostRequest("/explain", "question", `Explain ${topic} in simple terms.`, "explainResult", "Generating explanation...");
+        }
+
+        // 3. Summarize Text
+        function summarizeText() {
+            const text = document.getElementById("summarizeInput").value;
+            handlePostRequest("/summarize", "text", text, "summarizeResult", "Summarizing paragraph...");
+        }
+
+        // 4. Generate Quiz
+        function generateQuiz() {
+            const topic = document.getElementById("quizInput").value;
+            handlePostRequest("/quiz", "topic", topic, "quizResult", "Generating quiz questions...");
+        }
+
+        // 5. Get Learning Recommendations
+        function getLearningPath() {
+            const topic = document.getElementById("learningInput").value;
+            handlePostRequest("/learning", "topic", topic, "learningResult", "Creating learning roadmap...");
+        }
+    </script>
+</body>
+</html>
